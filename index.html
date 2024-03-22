@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Ticketing System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        section {
+            margin: 20px;
+        }
+
+        .event-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            width: 250px;
+            text-align: center;
+        }
+
+        .query-result {
+            margin-top: 20px;
+        }
+
+        .query-result-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .query-result-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Event Ticketing System</h1>
+    </header>
+
+    <section id="events">
+        <h2>Browse Events</h2>
+        <!-- Events will be dynamically populated here -->
+    </section>
+
+    <!-- New sections for displaying query results -->
+    <section id="userEventHistory" class="query-result">
+        <h2>User Event History</h2>
+        <div id="userEventHistoryList" class="query-result-list">
+            <!-- User event history will be dynamically populated here -->
+        </div>
+    </section>
+
+    <section id="eventTotalRevenue" class="query-result">
+        <h2>Event Total Revenue</h2>
+        <div id="eventTotalRevenueList" class="query-result-list">
+            <!-- Event total revenue will be dynamically populated here -->
+        </div>
+    </section>
+
+    <section id="eventsAboveAveragePrice" class="query-result">
+        <h2>Events Above Average Price</h2>
+        <div id="eventsAboveAveragePriceList" class="query-result-list">
+            <!-- Events above average price will be dynamically populated here -->
+        </div>
+    </section>
+
+    <section id="eventsWithNoTicketsSold" class="query-result">
+        <h2>Events With No Tickets Sold</h2>
+        <div id="eventsWithNoTicketsSoldList" class="query-result-list">
+            <!-- Events with no tickets sold will be dynamically populated here -->
+        </div>
+    </section>
+
+    <section id="usersWhoBoughtConcertTickets" class="query-result">
+        <h2>Users Who Bought Concert Tickets</h2>
+        <div id="usersWhoBoughtConcertTicketsList" class="query-result-list">
+            <!-- Users who bought concert tickets will be dynamically populated here -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Event Ticketing System</p>
+    </footer>
+
+    <script>
+        async function fetchAndDisplayData() {
+            try {
+                // Fetch data for events
+                const eventsResponse = await fetch('/api/events');
+                const eventsData = await eventsResponse.json();
+                displayEvents('events', eventsData);
+        
+                // Fetch data for user event history
+                const userEventHistoryResponse = await fetch('/api/user-event-history');
+                const userEventHistoryData = await userEventHistoryResponse.json();
+                displayData('userEventHistoryList', userEventHistoryData);
+        
+                // Fetch data for event total revenue for all events
+                const allEventTotalRevenueResponse = await fetch('/api/all-event-total-revenue');
+                const allEventTotalRevenueData = await allEventTotalRevenueResponse.json();
+                displayRevenue('eventTotalRevenueList', allEventTotalRevenueData);
+        
+                // Fetch data for events above average price
+                const eventsAboveAveragePriceResponse = await fetch('/api/events-above-average-price');
+                const eventsAboveAveragePriceData = await eventsAboveAveragePriceResponse.json();
+                displayData('eventsAboveAveragePriceList', eventsAboveAveragePriceData);
+        
+                // Fetch data for events with no tickets sold
+                const eventsWithNoTicketsSoldResponse = await fetch('/api/events-with-no-tickets-sold');
+                const eventsWithNoTicketsSoldData = await eventsWithNoTicketsSoldResponse.json();
+                displayData('eventsWithNoTicketsSoldList', eventsWithNoTicketsSoldData);
+        
+                // Fetch data for users who bought concert tickets
+                const usersWhoBoughtConcertTicketsResponse = await fetch('/api/users-who-bought-concert-tickets');
+                const usersWhoBoughtConcertTicketsData = await usersWhoBoughtConcertTicketsResponse.json();
+                displayData('usersWhoBoughtConcertTicketsList', usersWhoBoughtConcertTicketsData);
+        
+            } catch (error) {
+                console.error('Error fetching and displaying data:', error);
+            }
+        }
+        
+        function displayRevenue(containerId, data) {
+            const container = document.getElementById(containerId);
+        
+            if (Array.isArray(data)) {
+                container.innerHTML = ''; // Clear previous content
+        
+                data.forEach(event => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'query-result-item';
+                    itemElement.innerHTML = `
+                        <p>Event: ${event.event_name || 'Unknown Event'}</p>
+                        <p>Total Revenue: $${(event.Total_Revenue || 0).toFixed(2)}</p>
+                    `;
+                    container.appendChild(itemElement);
+                });
+            } else {
+                container.innerHTML = '<p>No data available</p>';
+            }
+        }
+        
+        function displayData(containerId, data) {
+            const container = document.getElementById(containerId);
+        
+            if (containerId === 'usersWhoBoughtConcertTicketsList') {
+                // Display only user names
+                if (Array.isArray(data)) {
+                    container.innerHTML = ''; // Clear previous content
+        
+                    data.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'query-result-item';
+                        itemElement.innerHTML = `<p>${item.user_name || 'Unknown User'}</p>`;
+                        container.appendChild(itemElement);
+                    });
+                } else {
+                    container.innerHTML = '<p>No data available</p>';
+                }
+            } else {
+                // Display events
+                if (Array.isArray(data)) {
+                    container.innerHTML = ''; // Clear previous content
+        
+                    data.forEach(event => {
+                        const eventCard = document.createElement('div');
+                        eventCard.className = 'event-card';
+        
+                        const formattedDate = event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Unknown Date';
+        
+                        eventCard.innerHTML = `
+                            <h3>${event.event_name || 'Unknown Event'}</h3>
+                            <p>Date: ${formattedDate}</p>
+                            <p>Time: ${event.event_time || 'Unknown Time'}</p>
+                            <p>Address: ${event.event_adress || 'Unknown Address'}</p>
+                            <p>Category: ${event.event_category || 'Unknown Category'}</p>
+                        `;
+                        container.appendChild(eventCard);
+                    });
+                } else {
+                    container.innerHTML = '<p>No events available</p>';
+                }
+            }
+        }
+        
+        function displayEvents(containerId, events) {
+            const container = document.getElementById(containerId);
+        
+            if (Array.isArray(events)) {
+                container.innerHTML = ''; // Clear previous content
+        
+                events.forEach(event => {
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'event-card';
+        
+                    const formattedDate = event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Unknown Date';
+        
+                    eventCard.innerHTML = `
+                        <h3>${event.event_name || 'Unknown Event'}</h3>
+                        <p>Date: ${formattedDate}</p>
+                        <p>Time: ${event.event_time || 'Unknown Time'}</p>
+                        <p>Address: ${event.event_adress || 'Unknown Address'}</p>
+                        <p>Category: ${event.event_category || 'Unknown Category'}</p>
+                        <p>Price: $${(event.ticket_price || 0).toFixed(2)}</p>
+                        <p>Tickets Left: ${event.tickets_left || 0}</p>
+                    `;
+                    container.appendChild(eventCard);
+                });
+            } else {
+                container.innerHTML = '<p>No events available</p>';
+            }
+        }
+        
+    
+        async function addToCart(eventId) {
+            console.log(`Added event with ID ${eventId} to the cart`);
+        }
+    
+        function checkout() {
+            console.log('Checkout button clicked');
+        }
+
+        window.addEventListener('load', fetchAndDisplayData);
+    </script>
+    
+
+</body>
+
+</html>
